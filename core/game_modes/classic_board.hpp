@@ -17,7 +17,7 @@ private:
     int level;
     int linesCleared;
     
-    // Sistema de geracao de peças
+    // Sistema de geracao de pecas
     std::random_device rd;
     std::mt19937 gen;
     std::uniform_int_distribution<> dis;

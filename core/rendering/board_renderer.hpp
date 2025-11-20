@@ -11,7 +11,7 @@ private:
 public:
     BoardRenderer(const ClassicBoard& gameBoard) : board(gameBoard) {}
     
-    // Conversão de cores
+    //convertendo cores
     sf::Color getSFMLColor(Color color, bool isGhost = false) const;
     
     void draw(sf::RenderWindow& window, int blockSize, int offsetX, int offsetY) const;

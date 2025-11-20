@@ -54,16 +54,16 @@ void ClassicBoard::updateGhostPiece() {
 }
 
 void ClassicBoard::spawnPiece() {
-    // Se nao tem proxima peça, gera uma
+    // Se nao tem proxima peca, gera uma
     if (!nextPiece) {
         nextPiece = Tetromino::create(getRandomPieceType());
     }
     
-    // Current peça recebe a proxima
+    // Current peca recebe a proxima
     currentPiece = std::move(nextPiece);
     currentPiece->setPosition(width / 2 - 1, 0);
     
-    // Gera nova proxima peça
+    // Gera nova proxima peca
     nextPiece = Tetromino::create(getRandomPieceType());
     
     updateGhostPiece();
@@ -113,7 +113,7 @@ bool ClassicBoard::rotate() {
     
     currentPiece->rotate();
     if (!isValidPosition(*currentPiece)) {
-        // Tenta wall kick - desfaz rotação se não couber
+        // Tenta wall kick - desfaz rotaaco se nao couber
         for (int i = 0; i < 3; i++) {
             currentPiece->rotate(); // Rotaciona mais 3x = 360 (volta ao original)
         }
@@ -180,7 +180,7 @@ int ClassicBoard::clearLines() {
     if (linesClearedThisTurn > 0) {
         linesCleared += linesClearedThisTurn;
         
-        // Sistema de pontuação classico do Tetris
+        // Sistema de pontuacao classico do Tetris
         switch (linesClearedThisTurn) {
             case 1:
                 score += 100 * level;
@@ -215,12 +215,12 @@ void ClassicBoard::reset() {
     level = 1;
     linesCleared = 0;
     
-    // Reseta as peças
+    // Reseta as pecas
     currentPiece.reset();
     nextPiece.reset();
     ghostPiece.reset();
     
-    // Reseta o gerador de números aleatorios
+    // Reseta o gerador de numeros aleatorios
     gen = std::mt19937(rd());
 
 }
