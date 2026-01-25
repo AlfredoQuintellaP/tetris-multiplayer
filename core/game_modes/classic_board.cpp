@@ -2,7 +2,8 @@
 #include <iostream>
 
 ClassicBoard::ClassicBoard(int w, int h) 
-    : width(w), height(h), score(0), level(1), linesCleared(0), gen(rd()), dis(0, 6) {
+    : width(w), height(h), score(0), level(1), linesCleared(0), 
+      canHold(true), gameOver(false), gen(rd()), dis(0, 6) {
     initializeGrid();
 }
 
@@ -43,6 +44,32 @@ bool ClassicBoard::isValidPosition(const Tetromino& piece) const {
     return true;
 }
 
+bool ClassicBoard::tryWallKick(int rotation) {
+    if (!currentPiece) return false;
+    
+    // Wall kick offsets (simplified SRS)
+    // Tenta mover a peça em diferentes direções para encaixar
+    int kickOffsets[][2] = {
+        {-1, 0},  // Left
+        {1, 0},   // Right
+        {-2, 0},  // Left 2
+        {2, 0},   // Right 2
+        {0, -1},  // Up
+        {-1, -1}, // Left + Up
+        {1, -1},  // Right + Up
+    };
+    
+    for (auto& offset : kickOffsets) {
+        currentPiece->move(offset[0], offset[1]);
+        if (isValidPosition(*currentPiece)) {
+            return true;
+        }
+        currentPiece->move(-offset[0], -offset[1]);
+    }
+    
+    return false;
+}
+
 void ClassicBoard::updateGhostPiece() {
     if (!currentPiece) return;
 
@@ -54,6 +81,8 @@ void ClassicBoard::updateGhostPiece() {
 }
 
 void ClassicBoard::spawnPiece() {
+    if (gameOver) return;  // FIX: Não spawna peça se game over
+    
     // Se nao tem proxima peca, gera uma
     if (!nextPiece) {
         nextPiece = Tetromino::create(getRandomPieceType());
@@ -63,14 +92,45 @@ void ClassicBoard::spawnPiece() {
     currentPiece = std::move(nextPiece);
     currentPiece->setPosition(width / 2 - 1, 0);
     
+    // Verifica se a peça pode ser colocada (game over check)
+    if (!isValidPosition(*currentPiece)) {
+        gameOver = true;
+        return;
+    }
+    
     // Gera nova proxima peca
     nextPiece = Tetromino::create(getRandomPieceType());
     
     updateGhostPiece();
 }
 
+bool ClassicBoard::hold() {
+    if (!canHold || !currentPiece || gameOver) {
+        return false;
+    }
+
+    if (!holdPiece) {
+        holdPiece = Tetromino::create(currentPiece->getType());
+        spawnPiece();
+    } else {
+        auto tempType = holdPiece->getType();
+        holdPiece = Tetromino::create(currentPiece->getType());
+        currentPiece = Tetromino::create(tempType);
+        currentPiece->setPosition(width / 2 - 1, 0);
+
+        if (!isValidPosition(*currentPiece)) {
+            return false;
+        }
+
+        updateGhostPiece();
+    }
+
+    canHold = false;
+    return true;
+}
+
 bool ClassicBoard::moveLeft() {
-    if (!currentPiece) return false;
+    if (!currentPiece || gameOver) return false;
     
     currentPiece->move(-1, 0);
     if (!isValidPosition(*currentPiece)) {
@@ -82,7 +142,7 @@ bool ClassicBoard::moveLeft() {
 }
 
 bool ClassicBoard::moveRight() {
-    if (!currentPiece) return false;
+    if (!currentPiece || gameOver) return false;
     
     currentPiece->move(1, 0);
     if (!isValidPosition(*currentPiece)) {
@@ -94,7 +154,7 @@ bool ClassicBoard::moveRight() {
 }
 
 bool ClassicBoard::moveDown() {
-    if (!currentPiece) return false;
+    if (!currentPiece || gameOver) return false;
     
     currentPiece->move(0, 1);
     if (!isValidPosition(*currentPiece)) {
@@ -109,22 +169,27 @@ bool ClassicBoard::moveDown() {
 }
 
 bool ClassicBoard::rotate() {
-    if (!currentPiece) return false;
+    if (!currentPiece || gameOver) return false;
     
     currentPiece->rotate();
+    
+    // Se não couber após rotação, tenta wall kick
     if (!isValidPosition(*currentPiece)) {
-        // Tenta wall kick - desfaz rotaaco se nao couber
-        for (int i = 0; i < 3; i++) {
-            currentPiece->rotate(); // Rotaciona mais 3x = 360 (volta ao original)
+        if (!tryWallKick(1)) {
+            // Se wall kick falhar, desfaz rotação
+            for (int i = 0; i < 3; i++) {
+                currentPiece->rotate();
+            }
+            return false;
         }
-        return false;
     }
+    
     updateGhostPiece();
     return true;
 }
 
 bool ClassicBoard::hardDrop() {
-    if (!currentPiece) return false;
+    if (!currentPiece || gameOver) return false;
     
     while (moveDown()) {
         // Continua caindo ate nao poder mais
@@ -151,6 +216,8 @@ bool ClassicBoard::placePiece() {
             }
         }
     }
+    
+    canHold = true;  // Reset hold availability
     return true;
 }
 
@@ -167,60 +234,50 @@ int ClassicBoard::clearLines() {
         }
         
         if (lineComplete) {
-            // Remove a linha
             grid.erase(grid.begin() + y);
-            // Adiciona nova linha no topo
             grid.insert(grid.begin(), std::vector<Color>(width, Color::BLACK));
             linesClearedThisTurn++;
             y++; 
         }
     }
     
-    // Atualiza score
     if (linesClearedThisTurn > 0) {
         linesCleared += linesClearedThisTurn;
         
-        // Sistema de pontuacao classico do Tetris
         switch (linesClearedThisTurn) {
             case 1:
-                score += 100 * level;
+                score += 40 * (level + 1);
                 break;
             case 2:
-                score += 300 * level;
+                score += 100 * (level + 1);
                 break;
             case 3:
-                score += 500 * level;
+                score += 300 * (level + 1);
                 break;
             case 4:
-                score += 800 * level; // Tetris!
+                score += 1200 * (level + 1);
                 break;
         }
         
-        level = linesCleared / 10 + 1;
+        level = linesCleared / 10;
     }
     
     return linesClearedThisTurn;
 }
 
-bool ClassicBoard::isGameOver() const {
-    if (!currentPiece) return true;
-    return !isValidPosition(*currentPiece);
-}
-
 void ClassicBoard::reset() {
     initializeGrid();
     
-    // Reseta todas as variaveis de estado
     score = 0;
     level = 1;
     linesCleared = 0;
+    canHold = true;
+    gameOver = false;  // Reset game over flag
     
-    // Reseta as pecas
     currentPiece.reset();
     nextPiece.reset();
     ghostPiece.reset();
+    holdPiece.reset();
     
-    // Reseta o gerador de numeros aleatorios
     gen = std::mt19937(rd());
-
 }

@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -g
-SFML_FLAGS = -lsfml-graphics -lsfml-window -lsfml-system
+SFML_FLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network
 
 SRC_DIR = core
 BUILD_DIR = build
@@ -10,13 +10,15 @@ GAME_MODES_DIR = $(SRC_DIR)/game_modes
 ENTITIES_DIR = $(SRC_DIR)/entities
 RENDERING_DIR = $(SRC_DIR)/rendering
 UTILS_DIR = $(SRC_DIR)/utils
+NETWORKING_DIR = $(SRC_DIR)/networking
 
 SOURCES = \
 	main.cpp \
 	$(GAME_MODES_DIR)/game.cpp \
 	$(GAME_MODES_DIR)/classic_board.cpp \
 	$(ENTITIES_DIR)/tetromino.cpp \
-	$(RENDERING_DIR)/board_renderer.cpp
+	$(RENDERING_DIR)/board_renderer.cpp \
+	$(NETWORKING_DIR)/network_manager.cpp
 
 OBJECTS = $(SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 
@@ -37,6 +39,7 @@ $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)/$(ENTITIES_DIR)
 	@mkdir -p $(BUILD_DIR)/$(RENDERING_DIR)
 	@mkdir -p $(BUILD_DIR)/$(UTILS_DIR)
+	@mkdir -p $(BUILD_DIR)/$(NETWORKING_DIR)
 
 $(BIN_DIR):
 	@mkdir -p $(BIN_DIR)
@@ -70,7 +73,7 @@ help:
 	@echo "=== Tetris Makefile Commands ==="
 	@echo "make all        - Compile all project"
 	@echo "make run        - Compile and run file"
-	@echo "make clean      - Clean compilled files"
+	@echo "make clean      - Clean compiled files"
 	@echo "make rebuild    - Clean and recompile everything"
 	@echo "make debug      - Execute with valgrind to detect possible leaks"
 	@echo "make check-sfml - Check if SFML is installed"

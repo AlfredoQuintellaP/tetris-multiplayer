@@ -1,0 +1,22 @@
+#ifndef GAME_STATE_H
+#define GAME_STATE_H
+
+enum class GameState {
+    MAIN_MENU,
+    SINGLE_PLAYER,
+    MULTIPLAYER_LOCAL,
+    MULTIPLAYER_ONLINE_LOBBY,
+    MULTIPLAYER_ONLINE_GAME,
+    PAUSED,
+    GAME_OVER
+};
+
+enum class MenuOption {
+    SINGLE_PLAYER,
+    MULTIPLAYER_LOCAL,
+    MULTIPLAYER_ONLINE,
+    EXIT,
+    COUNT
+};
+
+#endif
