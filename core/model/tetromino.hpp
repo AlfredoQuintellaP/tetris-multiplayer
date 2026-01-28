@@ -5,31 +5,45 @@
 #include <memory>
 #include "../utils/color.hpp"
 
+/**
+ * Types of Tetromino pieces in classic Tetris.
+ */
 enum class TetrominoType { I, O, T, L, J, S, Z };
 
+/**
+ * Base class representing a Tetromino piece.
+ * Handles piece shape, color, position, and rotation.
+ */
 class Tetromino {
-protected:
-    std::vector<std::vector<bool>> shape;
-    Color color;
-    int x, y;
-    TetrominoType type;
-    
 public:
     Tetromino() : x(0), y(0) {}
     virtual ~Tetromino() = default;
 
-    // Factory method, big bizuuu
+    /**
+     * Factory method to create Tetromino pieces by type.
+     * 
+     * @param type Type of Tetromino to create
+     * @return Unique pointer to the created Tetromino
+     */
     static std::unique_ptr<Tetromino> create(TetrominoType type);
 
-    // Clone method, second big bizuuu
+    /**
+     * Creates a deep copy of this Tetromino.
+     * 
+     * @return Unique pointer to the cloned Tetromino
+     */
     virtual std::unique_ptr<Tetromino> clone() const;
 
+    /**
+     * Rotates the piece 90 degrees clockwise.
+     */
     virtual void rotate();
 
+    // Position manipulation
     void setPosition(int newX, int newY) { x = newX; y = newY; }
     void move(int dx, int dy) { x += dx; y += dy; }
 
-    // Getters
+    // Accessors
     const std::vector<std::vector<bool>>& getShape() const { return shape; }
     Color getColor() const { return color; }
     int getX() const { return x; }
@@ -39,9 +53,15 @@ public:
     int getHeight() const { return shape.size(); }
 
 protected:
+    // Protected setters for derived classes
     void setType(TetrominoType newType) { type = newType; }
     void setColor(Color newColor) { color = newColor; }
     void setShape(const std::vector<std::vector<bool>>& newShape) { shape = newShape; }
+
+    std::vector<std::vector<bool>> shape; // Piece shape matrix
+    Color color;                          // Piece color
+    int x, y;                             // Board position
+    TetrominoType type;                   // Piece type
 };
 
 class IPiece : public Tetromino {
