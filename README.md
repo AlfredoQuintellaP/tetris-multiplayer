@@ -110,5 +110,54 @@ make run
 ### Using Makefile
 The project includes a comprehensive Makefile with several commands:
 ```bash
+# Build the project (default)
+make
 
+# Build with debug symbols
+make debug
+
+# Clean build files
+make clean
+
+# Clean and rebuild everything
+make rebuild
+
+# Build and run
+make run
+
+# Show project information
+make info
+
+# Show available commands
+make help
+
+# Show SFML installation instructions
+make sfml
 ```
+
+## Network Requirements
+
+- Both players must be on the same network (LAN)
+- Port 54000 must be open for TCP connections
+- For internet play, port forwarding may be required
+
+## Development
+
+### Archtecture Overview
+
+This project follows the MVC pattern:
+- Model (`core/model/`): Game logic, state and data
+- View (`core/view/`): Rendering and user interface
+- Controller (`core/controller/`): Input handling and game flow
+
+### Extending the Project
+
+1. New Game Mode: Add to `GameState` enum and implement corresponding controller/renderer methods
+2. New UI Elements: Extend `LayoutManager` and `GameRenderer`
+3. New Network Features: Add to `NetworkMessageType` and implement handling
+
+## Credits
+
+Developed by: Helena GUACHALLA and Alfredo QUINTELLA
+
+#### Enjoy playing Tetris!
